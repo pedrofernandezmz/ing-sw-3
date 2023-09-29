@@ -1,0 +1,17 @@
+# Utiliza la imagen oficial de Jenkins como base (que ya incluye Java)
+FROM jenkins/jenkins:lts
+
+# Cambia al usuario root para realizar instalaciones
+USER root
+
+# Instala .NET Core SDK 7.0 en macOS utilizando el script oficial
+RUN curl -SL --output dotnet-install.sh https://dot.net/v1/dotnet-install.sh && \
+    chmod +x dotnet-install.sh && \
+    ./dotnet-install.sh --version 7.0.100 --install-dir /usr/share/dotnet && \
+    rm dotnet-install.sh
+
+# Agrega el directorio de herramientas de .NET Core al PATH
+ENV PATH="$PATH:/usr/share/dotnet"
+
+# Regresa al usuario jenkins
+USER jenkins
