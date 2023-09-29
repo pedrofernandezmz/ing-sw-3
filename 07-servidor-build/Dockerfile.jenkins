@@ -1,17 +1,30 @@
-# Utiliza la imagen oficial de Jenkins como base (que ya incluye Java)
+# Utiliza la imagen oficial de Jenkins como base
 FROM jenkins/jenkins:lts
 
 # Cambia al usuario root para realizar instalaciones
 USER root
 
-# Instala .NET Core SDK 7.0 en macOS utilizando el script oficial
-RUN curl -SL --output dotnet-install.sh https://dot.net/v1/dotnet-install.sh && \
+# Instala dependencias necesarias
+RUN apt-get update && apt-get install -y \
+    apt-transport-https \
+    software-properties-common \
+    wget
+
+# Agrega el repositorio de Microsoft y actualiza
+RUN wget -q https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb && \
+    dpkg -i packages-microsoft-prod.deb && \
+    apt-get update
+
+# Instala el SDK de .NET Core utilizando scripts de instalación
+RUN wget -q https://dot.net/v1/dotnet-install.sh -O dotnet-install.sh && \
     chmod +x dotnet-install.sh && \
     ./dotnet-install.sh --version 7.0.100 --install-dir /usr/share/dotnet && \
     rm dotnet-install.sh
 
-# Agrega el directorio de herramientas de .NET Core al PATH
+# Establece la variable de entorno PATH para incluir el directorio donde se encuentra .NET Core
 ENV PATH="$PATH:/usr/share/dotnet"
 
-# Regresa al usuario jenkins
+# Instala la biblioteca ICU
+RUN apt-get install -y libicu-dev
+
 USER jenkins
